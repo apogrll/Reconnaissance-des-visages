@@ -1,3 +1,9 @@
+ ############################################################
+# Projet analyse de données 
+# Taouis Yacine
+# 23/10/2016
+ ############################################################
+ 
 import math
 import numpy as np 
 from PIL import Image
