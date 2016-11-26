@@ -1,0 +1,102 @@
+import math
+import numpy as np 
+from PIL import Image
+
+def Distance(p1,p2):
+  dx = p2[0] - p1[0]
+  dy = p2[1] - p1[1]
+  return math.sqrt(dx*dx+dy*dy)
+
+def ScaleRotateTranslate(image, angle, center = None, new_center = None, scale = None, resample=Image.BICUBIC):
+  if (scale is None) and (center is None):
+    return image.rotate(angle=angle, resample=resample)
+  nx,ny = x,y = center
+  sx=sy=1.0
+  if new_center:
+    (nx,ny) = new_center
+  if scale:
+    (sx,sy) = (scale, scale)
+  cosine = math.cos(angle)
+  sine = math.sin(angle)
+  a = cosine/sx
+  b = sine/sx
+  c = x-nx*a-ny*b
+  d = -sine/sy
+  e = cosine/sy
+  f = y-nx*d-ny*e
+  return image.transform(image.size, Image.AFFINE, (a,b,c,d,e,f), resample=resample)
+
+def CropFace(image, eye_left=(0,0), eye_right=(0,0), offset_pct=(0.2,0.2), dest_sz = (70,70)):
+  # calculate offsets in original image
+  offset_h = math.floor(float(offset_pct[0])*dest_sz[0])
+  offset_v = math.floor(float(offset_pct[1])*dest_sz[1])
+  # get the direction
+  eye_direction = (eye_right[0] - eye_left[0], eye_right[1] - eye_left[1])
+  # calc rotation angle in radians
+  rotation = -math.atan2(float(eye_direction[1]),float(eye_direction[0]))
+  # distance between them
+  dist = Distance(eye_left, eye_right)
+  # calculate the reference eye-width
+  reference = dest_sz[0] - 2.0*offset_h
+  # scale factor
+  scale = float(dist)/float(reference)
+  # rotate original around the left eye
+  image = ScaleRotateTranslate(image, center=eye_left, angle=rotation)
+  # crop the rotated image
+  crop_xy = (eye_left[0] - scale*offset_h, eye_left[1] - scale*offset_v)
+  crop_size = (dest_sz[0]*scale, dest_sz[1]*scale)
+  image = image.crop((int(crop_xy[0]), int(crop_xy[1]), int(crop_xy[0]+crop_size[0]), int(crop_xy[1]+crop_size[1])))
+  # resize it
+  image = image.resize(dest_sz, Image.ANTIALIAS)
+  return image
+
+if __name__ == "__main__":
+  image01 =  Image.open("subject01.normal")
+  CropFace(image01, eye_left=(153,113), eye_right=(213,113), offset_pct=(0.1,0.1), dest_sz=(200,200)).save("subject01_10_10_200_200.jpg")
+  CropFace(image01, eye_left=(153,113), eye_right=(213,113), offset_pct=(0.2,0.2), dest_sz=(200,200)).save("subject01_20_20_200_200.jpg")
+  CropFace(image01, eye_left=(153,113), eye_right=(213,113), offset_pct=(0.3,0.3), dest_sz=(200,200)).save("subject01_30_30_200_200.jpg")
+  CropFace(image01, eye_left=(153,113), eye_right=(213,113), offset_pct=(0.2,0.2)).save("subject01_20_20_70_70.jpg")
+  image02 = Image.open("subject02.normal")
+  CropFace(image02, eye_left=(163,113), eye_right=(226,113), offset_pct=(0.1,0.1), dest_sz=(200,200)).save("subject02_10_10_200_200.jpg")
+  CropFace(image02, eye_left=(163,113), eye_right=(226,113), offset_pct=(0.2,0.2), dest_sz=(200,200)).save("subject02_20_20_200_200.jpg")
+  CropFace(image02, eye_left=(163,113), eye_right=(226,113), offset_pct=(0.3,0.3), dest_sz=(200,200)).save("subject02_30_30_200_200.jpg")
+  CropFace(image02, eye_left=(163,113), eye_right=(226,113), offset_pct=(0.2,0.2)).save("subject02_20_20_70_70.jpg")
+  image03 = Image.open("subject03.normal")
+  CropFace(image03, eye_left=(138,140), eye_right=(189,140), offset_pct=(0.1,0.1), dest_sz=(200,200)).save("subject03_10_10_200_200.jpg")
+  CropFace(image03, eye_left=(138,140), eye_right=(189,140), offset_pct=(0.2,0.2), dest_sz=(200,200)).save("subject03_20_20_200_200.jpg")
+  CropFace(image03, eye_left=(138,140), eye_right=(189,140), offset_pct=(0.3,0.3), dest_sz=(200,200)).save("subject03_30_30_200_200.jpg")
+  CropFace(image03, eye_left=(138,140), eye_right=(189,140), offset_pct=(0.2,0.2)).save("subject03_20_20_70_70.jpg")
+  image04 = Image.open("subject04.normal")
+  CropFace(image04, eye_left=(163,120), eye_right=(220,120), offset_pct=(0.1,0.1), dest_sz=(200,200)).save("subject04_10_10_200_200.jpg")
+  CropFace(image04, eye_left=(163,120), eye_right=(220,120), offset_pct=(0.2,0.2), dest_sz=(200,200)).save("subject04_20_20_200_200.jpg")
+  CropFace(image04, eye_left=(163,120), eye_right=(220,120), offset_pct=(0.3,0.3), dest_sz=(200,200)).save("subject04_30_30_200_200.jpg")
+  CropFace(image04, eye_left=(163,120), eye_right=(220,120), offset_pct=(0.2,0.2)).save("subject04_20_20_70_70.jpg")
+  image05 = Image.open("subject05.normal")
+  CropFace(image05, eye_left=(163,116), eye_right=(220,116), offset_pct=(0.1,0.1), dest_sz=(200,200)).save("subject05_10_10_200_200.jpg")
+  CropFace(image05, eye_left=(163,116), eye_right=(220,116), offset_pct=(0.2,0.2), dest_sz=(200,200)).save("subject05_20_20_200_200.jpg")
+  CropFace(image05, eye_left=(163,116), eye_right=(220,116), offset_pct=(0.3,0.3), dest_sz=(200,200)).save("subject05_30_30_200_200.jpg")
+  CropFace(image05, eye_left=(163,116), eye_right=(220,116), offset_pct=(0.2,0.2)).save("subject05_20_20_70_70.jpg")
+  image15 = Image.open("subject15.normal")
+  CropFace(image15, eye_left=(144,136), eye_right=(193,136), offset_pct=(0.1,0.1), dest_sz=(200,200)).save("subject15_10_10_200_200.jpg")
+  CropFace(image15, eye_left=(144,136), eye_right=(193,136), offset_pct=(0.2,0.2), dest_sz=(200,200)).save("subject15_20_20_200_200.jpg")
+  CropFace(image15, eye_left=(144,136), eye_right=(193,136), offset_pct=(0.3,0.3), dest_sz=(200,200)).save("subject15_30_30_200_200.jpg")
+  CropFace(image15, eye_left=(144,136), eye_right=(193,136), offset_pct=(0.2,0.2)).save("subject15_20_20_70_70.jpg")
+  
+  image15 = Image.open("subject15_20_20_200_200.jpg")
+  conv15 = np.array(image15)
+  image01 = Image.open("subject01_20_20_200_200.jpg")
+  conv01 = np.array(image01)
+  image02 = Image.open("subject02_20_20_200_200.jpg")
+  conv02 = np.array(image02)
+  image03 = Image.open("subject03_20_20_200_200.jpg")
+  conv03 = np.array(image03)
+  image04 = Image.open("subject04_20_20_200_200.jpg")
+  conv04 = np.array(image04)
+  image05 = Image.open("subject05_20_20_200_200.jpg")
+  conv05 = np.array(image05)
+  print conv15
+  print conv01
+  print conv02
+  print conv03
+  print conv04
+  print conv05
